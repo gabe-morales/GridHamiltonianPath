@@ -24,17 +24,21 @@ public class TTY implements Runnable {
     **/
     @Override
     public void run() {
+        long startTime = 0, endTime = 0;
         if (board.isSolvable()) {
             System.out.println("Calculating...");
+            startTime = System.currentTimeMillis();
             board.call();
+            endTime = System.currentTimeMillis();
+            System.out.println("Duration: " + (endTime - startTime) + " ms");
             if (board.state == State.FINISHED) {
-                System.out.println(
+                System.out.print(
                     "Solution Found.\n\n" + board.pathToString()
                 );
                 return;
             }
         }
         
-        System.out.println("No Solution Exists.\n");
+        System.out.println("No Solution Exists.");
     }
 }

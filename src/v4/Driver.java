@@ -44,11 +44,13 @@ public class Driver {
     **/
     public static void main(String[] args) {
         int v1 = -1, v2 = -1, numThreads = 1;
+        long startTime, endTime;
         boolean headless = false;
         boolean[][] board = null;
         Dimension dimension = null;
         Scanner scanner;
         String t, f, string;
+        Runnable run;
         
         if (args.length == 0) {
             scanner = new Scanner(System.in);
@@ -128,20 +130,18 @@ public class Driver {
             }
         }
         
-        try {
-            if (headless && board == null) {
-                System.err.println("Use of 'headless' without an input file");
-                System.exit(-1);
-            }
-                
-            new Thread((board != null)?
-                ((headless)?
-                    new TTY(board, v1, v2, numThreads) :
-                    new GUI(board, v1, v2, numThreads)
-                ) :
-                new GUI(dimension.height, dimension.width, numThreads)
-            ).start();
+        if (headless && board == null) {
+            System.err.println("Use of 'headless' without an input file");
+            System.exit(-1);
         }
-        catch(Exception e) {e.printStackTrace();}
+        
+        run = ((board != null)?
+            ((headless)?
+                new TTY(board, v1, v2, numThreads) :
+                new GUI(board, v1, v2, numThreads)
+            ) :
+            new GUI(dimension.height, dimension.width, numThreads)
+        );
+        run.run();
     }
 }
