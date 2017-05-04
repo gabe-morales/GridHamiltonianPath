@@ -26,7 +26,7 @@ import javax.swing.AbstractAction;
  * board, as well as the entire algorithm for solving a puzzle
 **/
 public class GameBoard extends Board<Square, GameBoard.MoveAction>
-implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
+implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
     /* keeps track of the current path length */
     protected int pathSize;
     /* stores the number of workers available to complete the algorithm */
@@ -375,19 +375,24 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
      *   found or 'stop' event is issued.
     **/
     @Override
-    public GameBoard call() {
+    public Boolean call() {
         state = State.RUNNING;
         
-        state = (submitTasks())? State.FINISHED : State.STOPPED;
-        return null;
+        if (submitTasks()) {
+            state = State.FINISHED;
+            return true;
+        }
+        
+        state = State.STOPPED;
+        return false;
     }
     
     public boolean submitTasks() {
         int size;
         ExecutorService executor = Executors.newFixedThreadPool(numWorkers);
         Queue<GameBoard> queue = new LinkedList<GameBoard>();
-        Queue<Future<GameBoard>> futures = new LinkedList<Future<GameBoard>>();
-        Future<GameBoard> future;
+        Queue<Future<Boolean>> futures = new LinkedList<Future<Boolean>>();
+        Future<Boolean> future;
         GameBoard board;
         
         queue.add(new WorkerBoard(this));
@@ -418,9 +423,10 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
         while ((size = futures.size()) > 0 && state != State.STOPPED) {
             for (int i = 0; i < size; i++) {
                 future = futures.poll();
+                board = queue.poll();
                 if (future.isDone()) {
                     try {
-                        if ((board = future.get()) != null) {
+                        if (future.get()) {
                             while (pathSize < board.pathSize) {
                                 loc.setLocation(board.path.get(pathSize));
                                 forward();
@@ -433,6 +439,7 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
                     }
                 } else {
                     futures.add(future);
+                    queue.add(board);
                 }
             }
         }
@@ -685,18 +692,18 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
     protected static class WorkerBoard extends GameBoard {
         public WorkerBoard(GameBoard old) {super(old);}
         @Override
-        public GameBoard call() {
+        public Boolean call() {
             state = State.RUNNING;
             
             if (findSolution()) {
                 state = State.FINISHED;
-                return this;
+                return true;
             }
             
             if (state != State.STOPPED)
                 state = State.STOPPED;
             
-            return null;
+            return false;
         }
     }
     
