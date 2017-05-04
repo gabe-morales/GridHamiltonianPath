@@ -27,10 +27,6 @@ import javax.swing.AbstractAction;
 **/
 public class GameBoard extends Board<Square, GameBoard.MoveAction>
 implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
-    /* used to help the solver backtrack without losing the current path after
-     * a pause signal is fired
-     */
-    protected boolean first;
     /* keeps track of the current path length */
     protected int pathSize;
     /* stores the number of workers available to complete the algorithm */
@@ -41,8 +37,6 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
     protected Point loc;
     /* stores the path (an ordered list of points) */
     protected List<Point> path;
-    /* temporarily stores the path when the game is paused */
-    protected Point[] place;
     
     /**
      * Constructor that initializes the board based on the number of rows and
@@ -150,7 +144,6 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
         pathSize = rows * columns;
         numWorkers = workerCount;
         state = State.STOPPED;
-        first = true;
         bounds = new Dimension(columns, rows);
         loc = new Point(0, 0);
         
@@ -383,7 +376,6 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
     **/
     @Override
     public GameBoard call() {
-        first = true;
         state = State.RUNNING;
         
         state = (submitTasks())? State.FINISHED : State.STOPPED;
@@ -498,15 +490,8 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
         if (isGoal())
             return true;
         
-        if (state == State.STOPPED) {
-            if (first) {
-                place = new Point[pathSize];
-                for (int i = 0; i < pathSize; i++)
-                    place[i] = new Point(path.get(i));
-                first = false;
-            }
+        if (state == State.STOPPED)
             return false;
-        }
         
         for (MoveAction action : actions(grid))
             if (action.forwardCondition()) {
@@ -701,7 +686,6 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
         public WorkerBoard(GameBoard old) {super(old);}
         @Override
         public GameBoard call() {
-            first = true;
             state = State.RUNNING;
             
             if (findSolution()) {
@@ -709,12 +693,7 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, GameBoard> {
                 return this;
             }
             
-            if (state == State.STOPPED)
-                while (pathSize < place.length) {
-                    loc.setLocation(place[pathSize]);
-                    forward();
-                }
-            else
+            if (state != State.STOPPED)
                 state = State.STOPPED;
             
             return null;
