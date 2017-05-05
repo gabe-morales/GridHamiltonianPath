@@ -24,7 +24,7 @@ public class Driver {
             "Usage: java Driver [-options]\n" +
             "OPTIONS\n" +
             "\t-a, --args <rows> <columns>\tcreate a board with the" +
-                "specified dimensions\n" +
+                " specified dimensions\n" +
             "\t-f, --file <file>\t\timport board from file\n" +
             "\t-t, --threads <tc>\t\tuse 'tc' many threads\n" +
             "\t-h, --headless\t\t\trun without gui"
