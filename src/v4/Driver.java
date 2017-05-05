@@ -27,7 +27,7 @@ public class Driver {
                 "specified dimensions\n" +
             "\t-f, --file <file>\t\timport board from file\n" +
             "\t-t, --threads <tc>\t\tuse 'tc' many threads\n" +
-            "\t-h, --headless\t\trun without gui"
+            "\t-h, --headless\t\t\trun without gui"
         );
     }
     
