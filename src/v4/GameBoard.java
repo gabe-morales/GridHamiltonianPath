@@ -417,9 +417,6 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
             }
         }
         
-        System.out.println("Number of tasks: " + queue.size());
-        System.out.println("Number of procs: " + numWorkers);
-        
         for (WorkerBoard task : queue)
             futures.add(executor.submit(task));
         
