@@ -427,8 +427,8 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
                 if (future.isDone()) {
                     try {
                         if (future.get()) {
-                            for (int j = 0; j < board.pathSize; j++) {
-                                loc.setLocation(board.path.get(j));
+                            while (pathSize < board.pathSize) {
+                                loc.setLocation(board.path.get(pathSize));
                                 forward();
                             }
                             executor.shutdownNow();
