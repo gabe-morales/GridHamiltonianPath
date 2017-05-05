@@ -10,7 +10,7 @@ CLASSPATH=$(BIN)
 CODE=$(SRC)/$(PACKAGE)/$(MAIN).java
 
 all: $(BIN)
-	javac -sourcepath $(SRC) -cp $(CLASSPATH) -d $(BIN) $(CODE)
+	javac -sourcepath $(SRC) -classpath $(CLASSPATH) -d $(BIN) -Xprefer:source $(CODE)
 
 $(BIN):
 	mkdir $@
