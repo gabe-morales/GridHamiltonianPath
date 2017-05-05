@@ -50,7 +50,7 @@ public class Driver {
         Dimension dimension = null;
         Scanner scanner;
         String t, f, string;
-        Runnable run;
+        Runnable runnable;
         
         if (args.length == 0) {
             scanner = new Scanner(System.in);
@@ -135,13 +135,13 @@ public class Driver {
             System.exit(-1);
         }
         
-        run = ((board != null)?
+        runnable = ((board != null)?
             ((headless)?
                 new TTY(board, v1, v2, numThreads) :
                 new GUI(board, v1, v2, numThreads)
             ) :
             new GUI(dimension.height, dimension.width, numThreads)
         );
-        run.run();
+        runnable.run();
     }
 }

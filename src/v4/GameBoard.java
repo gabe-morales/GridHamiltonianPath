@@ -390,10 +390,10 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
     public boolean submitTasks() {
         int size;
         ExecutorService executor = Executors.newFixedThreadPool(numWorkers);
-        Queue<GameBoard> queue = new LinkedList<GameBoard>();
+        Queue<WorkerBoard> queue = new LinkedList<WorkerBoard>();
         Queue<Future<Boolean>> futures = new LinkedList<Future<Boolean>>();
         Future<Boolean> future;
-        GameBoard board;
+        WorkerBoard board;
         
         queue.add(new WorkerBoard(this));
         while ((size = queue.size()) < numWorkers) {
@@ -409,7 +409,7 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
                     if (action.forwardCondition()) {
                         action.updatePosition();
                         board.forward();
-                        queue.add(new WorkerBoard(this));
+                        queue.add(new WorkerBoard(board));
                         board.backward();
                         action.undoPosition();
                     }
@@ -417,7 +417,10 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
             }
         }
         
-        for (GameBoard task : queue)
+        System.out.println("Number of tasks: " + queue.size());
+        System.out.println("Number of procs: " + numWorkers);
+        
+        for (WorkerBoard task : queue)
             futures.add(executor.submit(task));
         
         while ((size = futures.size()) > 0 && state != State.STOPPED) {
@@ -427,8 +430,8 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
                 if (future.isDone()) {
                     try {
                         if (future.get()) {
-                            while (pathSize < board.pathSize) {
-                                loc.setLocation(board.path.get(pathSize));
+                            for (int j = 0; j < board.pathSize; j++) {
+                                loc.setLocation(board.path.get(j));
                                 forward();
                             }
                             executor.shutdownNow();
@@ -692,7 +695,7 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
     protected static class WorkerBoard extends GameBoard {
         public WorkerBoard(GameBoard old) {super(old);}
         @Override
-        public Boolean call() {
+        public final Boolean call() {
             state = State.RUNNING;
             
             if (findSolution()) {
