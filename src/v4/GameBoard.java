@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import javax.swing.AbstractAction;
 
 /**
@@ -387,6 +388,7 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
         return false;
     }
     
+    // TODO: Comment
     public boolean submitTasks() {
         int size;
         ExecutorService executor = Executors.newFixedThreadPool(numWorkers);
@@ -432,6 +434,7 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
                                 forward();
                             }
                             executor.shutdownNow();
+                            executor.awaitTermination(60, TimeUnit.SECONDS);
                             return true;
                         }
                     } catch (Exception e) {
@@ -443,7 +446,10 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
                 }
             }
         }
-        executor.shutdownNow();
+        try {
+            executor.shutdownNow();
+            executor.awaitTermination(60, TimeUnit.SECONDS);
+        } catch (Exception e) {}
         return false;
     }
     
@@ -689,6 +695,7 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
         return surround == 3;
     }
     
+    // TODO: Comment
     protected static class WorkerBoard extends GameBoard {
         public WorkerBoard(GameBoard old) {super(old);}
         @Override
