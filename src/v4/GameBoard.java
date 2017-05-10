@@ -463,8 +463,13 @@ implements StateSpaceSearch<Square[][], GameBoard.MoveAction, Boolean> {
         }
         
         try {
-            executor.shutdownNow();
-            executor.awaitTermination(20, TimeUnit.SECONDS);
+            executor.shutdown();
+            while (!queue.isEmpty()) {
+                board = queue.poll();
+                futures.poll();
+                board.state = State.STOPPED;
+            }
+            executor.awaitTermination(60, TimeUnit.SECONDS);
         } catch (Exception e) {
             System.err.println("Executor Shutdown Error");
         }
